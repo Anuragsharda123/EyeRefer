@@ -1,9 +1,11 @@
 import React from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
+import logo from '../Assets/title_logo.webp'
 
 const Header:React.FC = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
+    const doctype:any = localStorage.getItem("doctype");
   return (
     <>
         {/* <nav className="navbar navbar-expand-lg w-100 bg-body-secondary">
@@ -31,16 +33,27 @@ const Header:React.FC = () => {
         <header className="p-3 text-bg-secondary">
     <div className="container">
       <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-        <Link to="/" className="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
-          <img src="../Assets/title_logo" alt="EyeRefer" />
+        <Link to="#" className="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+          <img src={logo} alt="EyeRefer" height={50} />
         </Link>
 
         <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
           
-          <li><Link to="/F" className="nav-link px-2 text-white">Features</Link></li>
-          <li><Link to="/P" className="nav-link px-2 text-white">Pricing</Link></li>
-          <li><Link to="/FA" className="nav-link px-2 text-white">FAQs</Link></li>
-          <li><Link to="/AB" className="nav-link px-2 text-white">About</Link></li>
+          {token && (
+            <>
+          <li><Link to="/dashboard" className="nav-link px-2 text-white">Dashboard</Link></li>  {/* Main Dashboard  */}
+          <li><Link to="/patient" className="nav-link px-2 text-white">Patient</Link></li>  {/* List of Patients  */}
+          {(doctype == 1)&&(
+            <>
+              <li><Link to="/appointment" className="nav-link px-2 text-white">Appointments</Link></li>  {/* List of Patients  */}
+            </>
+          )}
+          <li><Link to="/doctor" className="nav-link px-2 text-white">Doctors</Link></li>   {/* List of MDs  */}
+          <li><Link to="/chat" className="nav-link px-2 text-white">Chat</Link></li>  {/* Chat with MDs */}
+          <li><Link to="/staff" className="nav-link px-2 text-white">Staff</Link></li>   {/* Staff Members  */}
+          <li><Link to="/add-patient" className="nav-link px-2 text-white">Add Referral Patient</Link></li>   {/* Staff Members  */}
+            </>
+          )}
         </ul>
 
         <div className="text-end">

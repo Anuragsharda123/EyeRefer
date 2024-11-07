@@ -22,6 +22,7 @@ const Login:React.FC = () => {
       console.log("Hello", response);
       if (response.status == 200){
         if(response.data.user.is_verified){
+          localStorage.setItem("doctype", response.data.user.doctype)
           localStorage.setItem("token", response.data.token);
           toast.success("Login Successfully");
           navigate('/dashboard');

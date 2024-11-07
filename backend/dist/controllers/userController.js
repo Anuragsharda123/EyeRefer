@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUser = exports.loginUser = exports.verifyUser = exports.registerUser = void 0;
+exports.getMDList = exports.getUser = exports.loginUser = exports.verifyUser = exports.registerUser = void 0;
 const env_1 = require("../environment/env");
 const Address_1 = __importDefault(require("../models/Address"));
 const mailer_1 = __importDefault(require("../utils/mailer"));
@@ -28,17 +28,19 @@ const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const { firstname, lastname, doctype, email, password } = req.body;
         const isExist = yield User_1.default.findOne({ where: { email: email } });
         if (isExist) {
-            res.status(401).json("User already Exist");
-        }
-        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-        const user = yield User_1.default.create({ firstname, lastname, doctype, email, password: hashedPassword });
-        if (user) {
-            const OTP = otpGenerator();
-            (0, mailer_1.default)(user.email, OTP);
-            res.status(201).json({ "OTP": OTP, "message": "Data Saved Successfully" });
+            res.status(401).json({ "message": "User already Exist" });
         }
         else {
-            res.status(403).json({ "message": "Something Went Wrong" });
+            const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+            const user = yield User_1.default.create({ firstname, lastname, doctype, email, password: hashedPassword });
+            if (user) {
+                const OTP = otpGenerator();
+                (0, mailer_1.default)(user.email, OTP);
+                res.status(201).json({ "OTP": OTP, "message": "Data Saved Successfully" });
+            }
+            else {
+                res.status(403).json({ "message": "Something Went Wrong" });
+            }
         }
     }
     catch (err) {
@@ -110,3 +112,19 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getUser = getUser;
+const getMDList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("11111111111111");
+        const mdList = yield User_1.default.findAll({ where: { doctype: 1 }, include: Address_1.default });
+        if (mdList) {
+            res.status(200).json({ "mdList": mdList, "message": "MD List Found" });
+        }
+        else {
+            res.status(404).json({ "message": "MD List Not Found" });
+        }
+    }
+    catch (err) {
+        res.status(500).json({ "message": `${err}` });
+    }
+});
+exports.getMDList = getMDList;

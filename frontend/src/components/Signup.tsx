@@ -120,7 +120,7 @@ const Signup:React.FC = () => {
                 </Form>
                 </>
             )}
-            </Formik>
+        </Formik>
             <Link to={'/Login'} >Already have an Account</Link>
     </div>
   )

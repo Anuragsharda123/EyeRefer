@@ -1,5 +1,6 @@
 import { Local } from "../environment/env";
 import Address from "../models/Address";
+import Patient from "../models/Patient";
 import sendOTP from "../utils/mailer";
 import User from "../models/User";
 import { Response } from 'express';
@@ -17,20 +18,23 @@ export const  registerUser = async (req:any, res:Response) => {
         const {firstname, lastname, doctype, email, password} = req.body;
         const isExist = await User.findOne({where:{email:email}});
         if(isExist){
-            res.status(401).json("User already Exist");
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({firstname,  lastname, doctype, email, password: hashedPassword});
-        if(user){
-            const OTP = otpGenerator();
-            sendOTP(user.email, OTP);
-            res.status(201).json({"OTP":OTP, "message":"Data Saved Successfully"});
+            res.status(401).json({"message":"User already Exist"});
         }
         else{
-            res.status(403).json({"message":"Something Went Wrong"});
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const user = await User.create({firstname,  lastname, doctype, email, password: hashedPassword});
+            if(user){
+                const OTP = otpGenerator();
+                sendOTP(user.email, OTP);
+                res.status(201).json({"OTP":OTP, "message":"Data Saved Successfully"});
+            }
+            else{
+                res.status(403).json({"message":"Something Went Wrong"});
+            }
         }
     }
-    catch(err){
+        catch(err){
         res.status(500).json({"message": err});
     }
 }
@@ -97,4 +101,21 @@ export const getUser = async (req:any, res:Response) => {
     catch(err){
         res.status(500).json({"message":`Error--->${err}`})
     }
+}
+
+export const getMDList = async(req:any, res:Response) => {
+    try{
+        console.log("11111111111111");
+        const mdList = await User.findAll({where:{doctype:1}, include:Address});
+        if(mdList){
+            res.status(200).json({"mdList":mdList, "message":"MD List Found"});
+        }
+        else{
+            res.status(404).json({"message":"MD List Not Found"});
+        }
+    }
+    catch(err){
+        res.status(500).json({"message":`${err}`});
+    }
+
 }

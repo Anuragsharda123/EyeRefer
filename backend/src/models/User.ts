@@ -10,6 +10,7 @@ class User extends Model{
     public gender!: string;
     public firstname!: string;
     public lastname!: string;
+    // public fullname!: string;
     public doctype!: number;  // '1' for MD & '2' for OD
     public email!: string;
     public password!: string;
@@ -34,6 +35,13 @@ User.init({
         type: DataTypes.STRING,
         allowNull:false
     },
+    // fullname:{
+    //     type: DataTypes.STRING,
+    //     allowNull:false,
+    //     get() {
+    //         return `${this.firstname} ${this.lastname}`;
+    //     },
+    // },
     profile_photo:{
         type: DataTypes.STRING,
         allowNull:true
@@ -75,7 +83,7 @@ User.init({
     }
 },{
     sequelize, 
-    modelName: 'user'
+    modelName: 'User'
 })
 
 export default User

@@ -23,6 +23,13 @@ User.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false
     },
+    // fullname:{
+    //     type: DataTypes.STRING,
+    //     allowNull:false,
+    //     get() {
+    //         return `${this.firstname} ${this.lastname}`;
+    //     },
+    // },
     profile_photo: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true
@@ -64,6 +71,6 @@ User.init({
     }
 }, {
     sequelize: db_1.default,
-    modelName: 'user'
+    modelName: 'User'
 });
 exports.default = User;
