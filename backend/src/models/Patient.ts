@@ -11,6 +11,8 @@ class Patient extends Model{
     public disease!: string;
     public referedby!: string;
     public referedto!: string;
+    public referedcompleted!: boolean;
+    public referback!: boolean
     public address!: string;
 }
 
@@ -33,6 +35,14 @@ Patient.init({
         type: DataTypes.STRING,
         allowNull: false
     },
+    referedcompleted:{
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+    },
+    referback:{
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+    }
 },{
     sequelize,
     modelName:'Patient'

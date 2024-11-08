@@ -4,8 +4,8 @@ interface config{
     VERIFY_USER: string;
     LOGIN_USER: string;
     GET_USER: string;
-    GET_MD_LIST: string;
-    
+    GET_DOC_LIST: string;
+    GET_PATIENT_LIST: string;    
 }
 
 export const Local:config = {
@@ -14,5 +14,6 @@ export const Local:config = {
     VERIFY_USER: import.meta.env.VITE_VERIFY_USER,
     LOGIN_USER: import.meta.env.VITE_LOGIN_USER,
     GET_USER: import.meta.env.VITE_GET_USER,
-    GET_MD_LIST: import.meta.env.VITE_GET_MD_LIST
+    GET_DOC_LIST: import.meta.env.VITE_GET_DOC_LIST,
+    GET_PATIENT_LIST: import.meta.env.VITE_GET_PATIENT_LIST
 }

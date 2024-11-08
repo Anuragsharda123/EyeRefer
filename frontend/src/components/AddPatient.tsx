@@ -23,7 +23,7 @@ const AddPatient:React.FC = () => {
 
   const fetchmds = async () => {
     try {
-      const response = await api.get(`${Local.GET_MD_LIST}`,{
+      const response = await api.get(`${Local.GET_DOC_LIST}`,{
         headers:{
           Authorization: `Bearer ${token}`
         }

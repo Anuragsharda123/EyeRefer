@@ -12,12 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMDList = exports.getUser = exports.loginUser = exports.verifyUser = exports.registerUser = void 0;
+exports.getPatientList = exports.getDocList = exports.getUser = exports.loginUser = exports.verifyUser = exports.registerUser = void 0;
 const env_1 = require("../environment/env");
 const Address_1 = __importDefault(require("../models/Address"));
+const Patient_1 = __importDefault(require("../models/Patient"));
 const mailer_1 = __importDefault(require("../utils/mailer"));
 const User_1 = __importDefault(require("../models/User"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const sequelize_1 = require("sequelize");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const Security_Key = env_1.Local.SECRET_KEY;
 const otpGenerator = () => {
@@ -101,7 +103,16 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { uuid } = req.user;
         const user = yield User_1.default.findOne({ where: { uuid: uuid }, include: Address_1.default });
         if (user) {
-            res.status(200).json({ "user": user, "message": "User Found" });
+            const referCount = yield Patient_1.default.count({ where: { referedto: uuid } });
+            const referCompleted = yield Patient_1.default.count({ where: { referedto: uuid, referedcompleted: 1 } });
+            let docCount;
+            if (user.doctype == 1) {
+                docCount = yield User_1.default.count({ where: { is_verified: 1 } });
+            }
+            else {
+                docCount = yield User_1.default.count({ where: { is_verified: 1, doctype: 1 } });
+            }
+            res.status(200).json({ "user": user, "message": "User Found", "docCount": docCount, "referCount": referCount, "referCompleted": referCompleted });
         }
         else {
             res.status(404).json({ "message": "User Not Found" });
@@ -112,12 +123,20 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getUser = getUser;
-const getMDList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getDocList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("11111111111111");
-        const mdList = yield User_1.default.findAll({ where: { doctype: 1 }, include: Address_1.default });
-        if (mdList) {
-            res.status(200).json({ "mdList": mdList, "message": "MD List Found" });
+        const { uuid } = req.user;
+        const user = yield User_1.default.findOne({ where: { uuid: uuid } });
+        let docList;
+        if ((user === null || user === void 0 ? void 0 : user.doctype) == 1) {
+            docList = yield User_1.default.findAll({ where: { uuid: { [sequelize_1.Op.ne]: uuid } }, include: Address_1.default });
+        }
+        else {
+            docList = yield User_1.default.findAll({ where: { doctype: 1, uuid: { [sequelize_1.Op.ne]: uuid } }, include: Address_1.default });
+        }
+        if (docList) {
+            res.status(200).json({ "docList": docList, "message": "Docs List Found" });
         }
         else {
             res.status(404).json({ "message": "MD List Not Found" });
@@ -127,4 +146,26 @@ const getMDList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ "message": `${err}` });
     }
 });
-exports.getMDList = getMDList;
+exports.getDocList = getDocList;
+const getPatientList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { uuid } = req.user;
+        const user = yield User_1.default.findOne({ where: { uuid: uuid } });
+        if (user) {
+            let patientList = Patient_1.default.findAll({ where: { [sequelize_1.Op.or]: [{ referedby: uuid }, { referedto: uuid }] } });
+            if (patientList) {
+                res.status(200).json({ "patientList": patientList, "message": "Patient List Found" });
+            }
+            else {
+                res.status(404).json({ "message": "Patient List Not Found" });
+            }
+        }
+        else {
+            res.status(404).json({ "message": "User Not Found" });
+        }
+    }
+    catch (err) {
+        res.status(500).json({ "message": `${err}` });
+    }
+});
+exports.getPatientList = getPatientList;

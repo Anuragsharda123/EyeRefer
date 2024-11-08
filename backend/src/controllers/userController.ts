@@ -4,7 +4,8 @@ import Patient from "../models/Patient";
 import sendOTP from "../utils/mailer";
 import User from "../models/User";
 import { Response } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import { Op } from "sequelize";
 import bcrypt from 'bcrypt';
 
 const Security_Key:any = Local.SECRET_KEY;
@@ -92,7 +93,17 @@ export const getUser = async (req:any, res:Response) => {
         const {uuid} = req.user;
         const user = await User.findOne({where:{uuid:uuid}, include:Address});
         if(user){
-            res.status(200).json({"user":user, "message":"User Found"});
+            const referCount = await Patient.count({where:{ referedto:uuid }});
+            const referCompleted = await Patient.count({where:{ referedto:uuid, referedcompleted:1 }});
+            let docCount;
+
+            if(user.doctype == 1){
+                docCount = await User.count({where:{ is_verified:1 }});
+            }
+            else{
+                docCount = await User.count({where:{ is_verified:1, doctype:1 }});
+            }
+            res.status(200).json({"user":user, "message":"User Found", "docCount":docCount, "referCount":referCount, "referCompleted":referCompleted});
         }
         else{
             res.status(404).json({"message":"User Not Found"})
@@ -103,12 +114,20 @@ export const getUser = async (req:any, res:Response) => {
     }
 }
 
-export const getMDList = async(req:any, res:Response) => {
+export const getDocList = async(req:any, res:Response) => {
     try{
         console.log("11111111111111");
-        const mdList = await User.findAll({where:{doctype:1}, include:Address});
-        if(mdList){
-            res.status(200).json({"mdList":mdList, "message":"MD List Found"});
+        const {uuid} = req.user;
+        const user = await User.findOne({where:{uuid:uuid}})
+        let docList;
+        if(user?.doctype==1){
+            docList = await User.findAll({ where: { uuid: {[Op.ne]: uuid} }, include:Address });
+        }
+        else{
+            docList = await User.findAll({ where: { doctype:1, uuid: {[Op.ne]: uuid} }, include:Address });
+        }
+        if(docList){
+            res.status(200).json({"docList":docList, "message":"Docs List Found"});
         }
         else{
             res.status(404).json({"message":"MD List Not Found"});
@@ -118,4 +137,26 @@ export const getMDList = async(req:any, res:Response) => {
         res.status(500).json({"message":`${err}`});
     }
 
+}
+
+export const getPatientList = async(req:any, res:Response) => {
+    try{
+        const {uuid} = req.user;
+        const user = await User.findOne({where:{uuid:uuid}});
+        if(user){
+            let patientList = Patient.findAll({where:{[Op.or]:[{referedby:uuid},{referedto:uuid}]}});
+            if(patientList){
+                res.status(200).json({"patientList":patientList, "message":"Patient List Found"});
+            }
+            else{
+                res.status(404).json({"message":"Patient List Not Found"});
+            }
+        }
+        else{
+            res.status(404).json({"message":"User Not Found"});
+        }
+    }
+    catch(err){
+        res.status(500).json({"message":`${err}`});
+    }
 }

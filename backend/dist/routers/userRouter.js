@@ -13,5 +13,6 @@ router.post("/register", signupValidation_1.default, userController_1.registerUs
 router.post("/login", loginValidation_1.default, userController_1.loginUser);
 router.put("/verify", userController_1.verifyUser);
 router.get('/user', userAuth_1.default, userController_1.getUser);
-router.get('/md-list', userAuth_1.default, userController_1.getMDList);
+router.get('/doc-list', userAuth_1.default, userController_1.getDocList);
+router.get('/patient-list', userAuth_1.default, userController_1.getPatientList);
 exports.default = router;
