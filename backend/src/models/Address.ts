@@ -10,7 +10,7 @@ class Address extends Model{
     public district!: string;
     public city!: string;
     public state!: string;
-    public phone!: number;
+    public phone!: string;
     public pincode!: number;
     public userId!: number;
 }
@@ -35,7 +35,7 @@ Address.init({
         type: DataTypes.STRING,
     },
     phone: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
     },
     pincode: {
         type: DataTypes.INTEGER,

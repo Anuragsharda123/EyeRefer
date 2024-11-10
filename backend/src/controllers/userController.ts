@@ -94,7 +94,7 @@ export const getUser = async (req:any, res:Response) => {
         const user = await User.findOne({where:{uuid:uuid}, include:Address});
         if(user){
             const referCount = await Patient.count({where:{ referedto:uuid }});
-            const referCompleted = await Patient.count({where:{ referedto:uuid, referedcompleted:1 }});
+            const referCompleted = await Patient.count({where:{ referedto:uuid, referalstatus:1 }});
             let docCount;
 
             if(user.doctype == 1){
@@ -144,9 +144,41 @@ export const getPatientList = async(req:any, res:Response) => {
         const {uuid} = req.user;
         const user = await User.findOne({where:{uuid:uuid}});
         if(user){
-            let patientList = Patient.findAll({where:{[Op.or]:[{referedby:uuid},{referedto:uuid}]}});
+            let patientList:any = await Patient.findAll({where:{[Op.or]:[{referedby:uuid},{referedto:uuid}]}});
             if(patientList){
-                res.status(200).json({"patientList":patientList, "message":"Patient List Found"});
+                // var newPatientList:any = {};
+                const plist: any[] = [];
+                
+                // Fetch related data in parallel for each patient
+                for (const patient of patientList) {
+                    // Fetch referedby and referedto and address in parallel
+                    const [referedtoUser, referedbyUser, address] = await Promise.all([
+                        User.findOne({ where: { uuid: patient.referedto } }),
+                        User.findOne({ where: { uuid: patient.referedby } }),
+                        Address.findOne({ where: { uuid: patient.address } }),
+                    ]);
+
+                    // Prepare the patient data to be added to the response
+                    const newPatientList: any = {
+                        uuid: patient.uuid,
+                        firstname: patient.firstname,
+                        lastname: patient.lastname,
+                        disease: patient.disease,
+                        referalstatus: patient.referalstatus,
+                        referback: patient.referback,
+                        createdAt: patient.createdAt,
+                        updatedAt: patient.updatedAt,
+                        referedto: referedtoUser,
+                        referedby: referedbyUser,
+                        address: address,
+                    };
+
+                    plist.push(newPatientList);
+                }
+                
+                console.log("Data----->", plist);
+                // console.log("P-------->", patientList[0]);
+                res.status(200).json({"patientList":plist, "message":"Patient List Found"});
             }
             else{
                 res.status(404).json({"message":"Patient List Not Found"});
@@ -154,6 +186,50 @@ export const getPatientList = async(req:any, res:Response) => {
         }
         else{
             res.status(404).json({"message":"User Not Found"});
+        }
+    }
+    catch(err){
+        res.status(500).json({"message":`${err}`});
+    }
+}
+
+export const addPatient = async(req:any, res:Response) => {
+    try{
+        const {uuid} = req.user;
+        const user = await User.findOne({where:{uuid:uuid}});
+        if(user){
+            const {firstname, lastname, disease, address, referedto, referback } = req.body;
+
+            const patient = await Patient.create({ firstname, lastname, disease, address, referedto, referback, referedby:uuid });
+            if(patient){
+                res.status(200).json({"message": "Patient added Successfully"});
+            }
+        }
+        else{
+            res.status(401).json({"message":"you're not Authorised"});
+        }
+    }
+    catch(err){
+        res.status(500).json({"message":`${err}`});
+    }
+}
+
+export const addAddress = async(req:any, res:Response) => {
+    try{
+        const {uuid} = req.user;
+        const user = await User.findOne({where:{uuid:uuid}});
+        if(user){
+            const {street, district, city, state, pincode, phone} = req.body;
+            const address = await Address.create({street, district, city, state, pincode, phone, user:uuid});
+            if(address){
+                res.status(200).json({"message": "Address added Successfully"});
+            }
+            else{
+                res.status(400).json({"message":"Error in Saving Address"});
+            }
+        }
+        else{
+            res.status(401).json({"message":"you're not Authorised"});
         }
     }
     catch(err){

@@ -12,6 +12,8 @@ import Signup from './components/Signup'
 import Header from './components/Header';
 import Verify from './components/Verify'
 import Login from './components/Login'
+import Profile from './components/Profile'
+import AddAddress from './components/AddAddress'
 import './App.css'
 
 const  App:react.FC = () => {
@@ -56,6 +58,14 @@ const  App:react.FC = () => {
         {
           path: '/add-staff',
           element: <AddStaff />
+        },
+        {
+          path: '/add-address',
+          element: <AddAddress />
+        },
+        {
+          path: '/profile',
+          element: <Profile />
         }
       ]
     }

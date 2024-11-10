@@ -51,17 +51,34 @@ const Header:React.FC = () => {
           <li><Link to="/doctor" className="nav-link px-2 text-white">Doctors</Link></li>   {/* List of MDs  */}
           <li><Link to="/chat" className="nav-link px-2 text-white">Chat</Link></li>  {/* Chat with MDs */}
           <li><Link to="/staff" className="nav-link px-2 text-white">Staff</Link></li>   {/* Staff Members  */}
-          <li><Link to="/add-patient" className="nav-link px-2 text-white">Add Referral Patient</Link></li>   {/* Staff Members  */}
+          {(doctype == 2)&&(
+            <>
+              <li><Link to="/add-patient" className="nav-link px-2 text-white">Add Referral Patient</Link></li>   {/* Staff Members  */}
+            </>
+          )}
             </>
           )}
         </ul>
 
         <div className="text-end">
             {token && (<>
-          <button type="button" onClick={()=>{
-            localStorage.clear();
-            navigate("/login");
-          }} className="btn btn-outline-light me-2">Logout</button>
+          <div className="dropdown">
+            <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Hi Doctor
+            </button>
+            <ul className="dropdown-menu dropdown-menu-dark">
+              <li><a className="dropdown-item" href="/profile">Profile</a></li>
+              <li><a className="dropdown-item" href="/update-password">Change Password</a></li>
+              {/* <li><hr className="dropdown-divider" /></li> */}
+              <li><a className="dropdown-item" onClick={()=>{
+                localStorage.clear();
+                navigate("/login");
+                }} href="#">Logout</a></li>
+            </ul>
+          </div>
+          
+
+          
             </>)}
             {(!token) && (
                 <>

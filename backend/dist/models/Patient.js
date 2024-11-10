@@ -29,9 +29,10 @@ Patient.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false
     },
-    referedcompleted: {
+    referalstatus: {
         type: sequelize_1.DataTypes.BOOLEAN,
-        allowNull: false
+        allowNull: true,
+        defaultValue: false
     },
     referback: {
         type: sequelize_1.DataTypes.BOOLEAN,

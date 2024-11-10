@@ -29,7 +29,7 @@ Address.init({
         type: sequelize_1.DataTypes.STRING,
     },
     phone: {
-        type: sequelize_1.DataTypes.INTEGER,
+        type: sequelize_1.DataTypes.STRING,
     },
     pincode: {
         type: sequelize_1.DataTypes.INTEGER,

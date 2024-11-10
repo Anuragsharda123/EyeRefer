@@ -11,7 +11,7 @@ class Patient extends Model{
     public disease!: string;
     public referedby!: string;
     public referedto!: string;
-    public referedcompleted!: boolean;
+    public referalstatus!: boolean;
     public referback!: boolean
     public address!: string;
 }
@@ -35,9 +35,10 @@ Patient.init({
         type: DataTypes.STRING,
         allowNull: false
     },
-    referedcompleted:{
+    referalstatus:{
         type: DataTypes.BOOLEAN,
-        allowNull: false
+        allowNull: true,
+        defaultValue:false
     },
     referback:{
         type: DataTypes.BOOLEAN,

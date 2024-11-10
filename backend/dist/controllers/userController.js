@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPatientList = exports.getDocList = exports.getUser = exports.loginUser = exports.verifyUser = exports.registerUser = void 0;
+exports.addAddress = exports.addPatient = exports.getPatientList = exports.getDocList = exports.getUser = exports.loginUser = exports.verifyUser = exports.registerUser = void 0;
 const env_1 = require("../environment/env");
 const Address_1 = __importDefault(require("../models/Address"));
 const Patient_1 = __importDefault(require("../models/Patient"));
@@ -104,7 +104,7 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield User_1.default.findOne({ where: { uuid: uuid }, include: Address_1.default });
         if (user) {
             const referCount = yield Patient_1.default.count({ where: { referedto: uuid } });
-            const referCompleted = yield Patient_1.default.count({ where: { referedto: uuid, referedcompleted: 1 } });
+            const referCompleted = yield Patient_1.default.count({ where: { referedto: uuid, referalstatus: 1 } });
             let docCount;
             if (user.doctype == 1) {
                 docCount = yield User_1.default.count({ where: { is_verified: 1 } });
@@ -152,9 +152,37 @@ const getPatientList = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const { uuid } = req.user;
         const user = yield User_1.default.findOne({ where: { uuid: uuid } });
         if (user) {
-            let patientList = Patient_1.default.findAll({ where: { [sequelize_1.Op.or]: [{ referedby: uuid }, { referedto: uuid }] } });
+            let patientList = yield Patient_1.default.findAll({ where: { [sequelize_1.Op.or]: [{ referedby: uuid }, { referedto: uuid }] } });
             if (patientList) {
-                res.status(200).json({ "patientList": patientList, "message": "Patient List Found" });
+                // var newPatientList:any = {};
+                const plist = [];
+                // Fetch related data in parallel for each patient
+                for (const patient of patientList) {
+                    // Fetch referedby and referedto and address in parallel
+                    const [referedtoUser, referedbyUser, address] = yield Promise.all([
+                        User_1.default.findOne({ where: { uuid: patient.referedto } }),
+                        User_1.default.findOne({ where: { uuid: patient.referedby } }),
+                        Address_1.default.findOne({ where: { uuid: patient.address } }),
+                    ]);
+                    // Prepare the patient data to be added to the response
+                    const newPatientList = {
+                        uuid: patient.uuid,
+                        firstname: patient.firstname,
+                        lastname: patient.lastname,
+                        disease: patient.disease,
+                        referalstatus: patient.referalstatus,
+                        referback: patient.referback,
+                        createdAt: patient.createdAt,
+                        updatedAt: patient.updatedAt,
+                        referedto: referedtoUser,
+                        referedby: referedbyUser,
+                        address: address,
+                    };
+                    plist.push(newPatientList);
+                }
+                console.log("Data----->", plist);
+                // console.log("P-------->", patientList[0]);
+                res.status(200).json({ "patientList": plist, "message": "Patient List Found" });
             }
             else {
                 res.status(404).json({ "message": "Patient List Not Found" });
@@ -169,3 +197,46 @@ const getPatientList = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getPatientList = getPatientList;
+const addPatient = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { uuid } = req.user;
+        const user = yield User_1.default.findOne({ where: { uuid: uuid } });
+        if (user) {
+            const { firstname, lastname, disease, address, referedto, referback } = req.body;
+            const patient = yield Patient_1.default.create({ firstname, lastname, disease, address, referedto, referback, referedby: uuid });
+            if (patient) {
+                res.status(200).json({ "message": "Patient added Successfully" });
+            }
+        }
+        else {
+            res.status(401).json({ "message": "you're not Authorised" });
+        }
+    }
+    catch (err) {
+        res.status(500).json({ "message": `${err}` });
+    }
+});
+exports.addPatient = addPatient;
+const addAddress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { uuid } = req.user;
+        const user = yield User_1.default.findOne({ where: { uuid: uuid } });
+        if (user) {
+            const { street, district, city, state, pincode, phone } = req.body;
+            const address = yield Address_1.default.create({ street, district, city, state, pincode, phone, user: uuid });
+            if (address) {
+                res.status(200).json({ "message": "Address added Successfully" });
+            }
+            else {
+                res.status(400).json({ "message": "Error in Saving Address" });
+            }
+        }
+        else {
+            res.status(401).json({ "message": "you're not Authorised" });
+        }
+    }
+    catch (err) {
+        res.status(500).json({ "message": `${err}` });
+    }
+});
+exports.addAddress = addAddress;

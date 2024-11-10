@@ -17,8 +17,7 @@ const loginValidation = (req:any, res:any, next:NextFunction) => {
     const value = validationSchema.validate(req.body);
 
     if(value.error){
-        const errormessages = value.error.details.map(err => err.message);
-        res.status(400).json({'message':errormessages});
+        res.status(400).json({'message':value.error.message});
     }
     else{
         next();

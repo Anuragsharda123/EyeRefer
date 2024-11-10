@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-// import { useNavigate } from 'react-router-dom';
 import { Local } from '../environment/env';
 import api from '../api/axiosInstance';
 import React, { useEffect } from 'react';

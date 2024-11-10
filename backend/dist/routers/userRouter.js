@@ -15,4 +15,6 @@ router.put("/verify", userController_1.verifyUser);
 router.get('/user', userAuth_1.default, userController_1.getUser);
 router.get('/doc-list', userAuth_1.default, userController_1.getDocList);
 router.get('/patient-list', userAuth_1.default, userController_1.getPatientList);
+router.post('/add-patient', userAuth_1.default, userController_1.addPatient);
+router.post('/add-address', userAuth_1.default, userController_1.addAddress);
 exports.default = router;
